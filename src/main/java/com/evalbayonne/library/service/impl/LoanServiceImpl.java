@@ -26,6 +26,8 @@ import java.util.List;
 public class LoanServiceImpl implements LoanService {
 
     private static final int LOAN_DURATION_DAYS = 14;
+    private static final int MAX_ACTIVE_LOANS_PER_MEMBER = 3;
+    private static final int MAX_RENEWALS = 2;
 
     private final LoanRepository loanRepository;
     private final BookRepository bookRepository;
@@ -64,6 +66,12 @@ public class LoanServiceImpl implements LoanService {
             throw new BusinessRuleException("Le livre '" + book.getTitle() + "' est deja emprunte");
         }
 
+        long activeLoansForMember = loanRepository.countByMemberIdAndStatus(member.getId(), LoanStatus.ACTIVE);
+        if (activeLoansForMember > MAX_ACTIVE_LOANS_PER_MEMBER) {
+            throw new BusinessRuleException(
+                    "L'adherent '" + member.getLastName() + "' a atteint son nombre maximum de prets actifs");
+        }
+
         LocalDate today = LocalDate.now();
         Loan loan = Loan.builder()
                 .book(book)
@@ -86,6 +94,20 @@ public class LoanServiceImpl implements LoanService {
 
         loan.setReturnDate(LocalDate.now());
         loan.setStatus(LoanStatus.RETURNED);
+
+        return LoanMapper.toResponse(loanRepository.save(loan));
+    }
+
+    @Override
+    public LoanResponse renewLoan(Long id) {
+        Loan loan = getLoanOrThrow(id);
+
+        if (loan.getRenewalCount() >= MAX_RENEWALS) {
+            throw new BusinessRuleException("Ce pret a deja atteint le nombre maximum de renouvellements");
+        }
+
+        loan.setDueDate(LocalDate.now().plusDays(LOAN_DURATION_DAYS));
+        loan.setRenewalCount(loan.getRenewalCount() + 1);
 
         return LoanMapper.toResponse(loanRepository.save(loan));
     }

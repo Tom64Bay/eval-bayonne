@@ -15,4 +15,6 @@ public interface LoanService {
     LoanResponse createLoan(LoanRequest request);
 
     LoanResponse returnLoan(Long id);
+
+    LoanResponse renewLoan(Long id);
 }
