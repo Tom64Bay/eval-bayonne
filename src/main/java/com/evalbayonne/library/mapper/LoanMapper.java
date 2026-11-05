@@ -22,7 +22,8 @@ public final class LoanMapper {
                 loan.getLoanDate(),
                 loan.getDueDate(),
                 loan.getReturnDate(),
-                loan.getStatus()
+                loan.getStatus(),
+                loan.getRenewalCount()
         );
     }
 }

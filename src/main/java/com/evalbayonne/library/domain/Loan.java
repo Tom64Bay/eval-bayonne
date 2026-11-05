@@ -51,4 +51,8 @@ public class Loan {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private LoanStatus status;
+
+    @Builder.Default
+    @Column(name = "renewal_count", nullable = false)
+    private Integer renewalCount = 0;
 }
